@@ -1,3 +1,5 @@
+--FINAL VERSION
+
 --gets first line from the multiline string
 getFirstLine :: String -> String
 getFirstLine input = head (lines input)
@@ -12,7 +14,7 @@ stripChars = filter . flip notElem
 
 --removes duplicates from a string
 removeDuplicates [] = []
-removeDuplicates (x:xs) = x : removeDuplicates (filter (\y -> not(x == y)) xs)
+removeDuplicates (x:xs) = x : removeDuplicates (filter (\y -> x /= y) xs)
 
 
 --splits string on the occurence of a specified char
@@ -27,7 +29,7 @@ splitString p s =  case dropWhile p s of
 expand :: Num a => [a] -> a
 expand [] = 0
 expand [x] = x
-expand (x:xs) = x* 10^(length xs) + expand xs
+expand (x:xs) = x* 10 ^ length xs + expand xs
 
 --gets the answer to the cryptarithm
 getAnswer :: ([Integer] -> Bool) -> [Integer]
