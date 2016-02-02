@@ -1,4 +1,4 @@
---FINAL VERSION 1.2
+--FINAL VERSION 1.3
 
 --gets first line from the multiline string
 getFirstLine :: String -> String
@@ -6,19 +6,20 @@ getFirstLine input = head (lines input)
 
 --removes duplicate chars from a string
 getUniqueChars :: String -> String
-getUniqueChars string = removeDuplicates (stripChars "+= " string)
+getUniqueChars string = removeDuplicates (stripChars "+=* " string)
 
 --removes specified chars from a string
 stripChars :: String -> String -> String
 stripChars = filter . flip notElem
 
 --removes duplicates from a string
+removeDuplicates :: Eq a => [a] -> [a]
 removeDuplicates [] = []
 removeDuplicates (x:xs) = x : removeDuplicates (filter (\y -> x /= y) xs)
 
 
 --splits string on the occurence of a specified char
-splitString     :: (Char -> Bool) -> String -> [String]
+splitString :: (Char -> Bool) -> String -> [String]
 splitString p s =  case dropWhile p s of
                       "" -> []
                       s' -> w : splitString p s''
@@ -37,8 +38,16 @@ getAnswer isOk = head [ list | list <- perm [0..9], isOk list]
 
 
 --checks whether list of numbers fits as a solution
-isOk :: (Eq a, Eq b, Num b) => [a] -> [a] -> [a] -> [a] -> [b] -> Bool
-isOk letters var1 var2 result numbers = expand (wordToDigits letters numbers var1) + expand (wordToDigits letters numbers var2) == expand (wordToDigits letters numbers result) 
+isOkAddition :: (Eq a, Eq b, Num b) => [a] -> [a] -> [a] -> [a] -> [b] -> Bool
+isOkAddition letters var1 var2 result numbers = expand (wordToDigits letters numbers var1) + expand (wordToDigits letters numbers var2) == expand (wordToDigits letters numbers result) 
+                                        && head (wordToDigits letters numbers var1) /= 0 
+                                        && head (wordToDigits letters numbers var2) /= 0 
+                                        && head (wordToDigits letters numbers result) /= 0
+
+
+--checks whether list of numbers fits as a solution
+isOkMultiply :: (Eq a, Eq b, Num b) => [a] -> [a] -> [a] -> [a] -> [b] -> Bool
+isOkMultiply letters var1 var2 result numbers = expand (wordToDigits letters numbers var1) * expand (wordToDigits letters numbers var2) == expand (wordToDigits letters numbers result) 
                                         && head (wordToDigits letters numbers var1) /= 0 
                                         && head (wordToDigits letters numbers var2) /= 0 
                                         && head (wordToDigits letters numbers result) /= 0
@@ -64,16 +73,34 @@ extractFromJust :: Maybe a -> a
 extractFromJust (Just x) = x
 
 
+--gets an operator from a string
+getOperator :: String -> Char
+getOperator [] = ' '
+getOperator (x:xs)
+                | x == '+' = '+'
+                | x == '*' = '*'
+                | otherwise = getOperator xs
+
+--gets appropriate isOk function
+getOkFunction operator
+                    | operator == '+' = isOkAddition
+                    | operator == '*' = isOkMultiply
+                    | otherwise = error "Operator is not supported"
+
+
+
 main :: IO()
 main = do
        contents <- readFile "expression.txt"
        let firstLine = getFirstLine contents
        let uniqueLetters = getUniqueChars firstLine
-       let firstWord = stripChars " " (head (splitString (=='+') firstLine))
-       let remainder = concat (tail (splitString (=='+') firstLine))
+       let operator = getOperator firstLine
+       
+       let firstWord = stripChars " " (head (splitString (==operator) firstLine))
+       let remainder = concat (tail (splitString (==operator) firstLine))
        let secondWord = stripChars " " (head (splitString (=='=') remainder))
        let result = stripChars " " (last (splitString (=='=') remainder))
        
-       let answer = (take (length uniqueLetters) (getAnswer (isOk uniqueLetters firstWord secondWord result)))
        
+       let answer = (take (length uniqueLetters) (getAnswer ((getOkFunction operator) uniqueLetters firstWord secondWord result)))
        print (zip uniqueLetters answer)
