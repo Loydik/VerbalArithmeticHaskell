@@ -1,4 +1,4 @@
---FINAL VERSION
+--FINAL VERSION 1.2
 
 --gets first line from the multiline string
 getFirstLine :: String -> String
@@ -58,6 +58,7 @@ views :: [t] -> [(t,[t])]
 views [] = []
 views (x:xs) = ((x,xs) : [ (y,(x:ys)) | (y,ys) <- views xs ])
 
+
 -- extracts the element out of a 'Just' using pattern matching
 extractFromJust :: Maybe a -> a
 extractFromJust (Just x) = x
@@ -73,4 +74,6 @@ main = do
        let secondWord = stripChars " " (head (splitString (=='=') remainder))
        let result = stripChars " " (last (splitString (=='=') remainder))
        
-       print (take (length uniqueLetters) (getAnswer (isOk uniqueLetters firstWord secondWord result)))
+       let answer = (take (length uniqueLetters) (getAnswer (isOk uniqueLetters firstWord secondWord result)))
+       
+       print (zip uniqueLetters answer)
